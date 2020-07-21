@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>SampleWebAPI</name>
+    </assembly>
+    <members>
+        <member name="M:SampleWebAPI.Controllers.CustomerController.Get(System.Int32,System.Int32)">
+            <summary>
+            لیست مشتریان سازمان
+            </summary>
+            <param name="page">صفحه جاری</param>
+            <param name="limit">تعداد در هر صفحه</param>
+            <returns></returns>
+        </member>
+        <member name="M:SampleWebAPI.Controllers.CustomerController.Get(System.Int32)">
+            <summary>
+            اطلاعات مشتریان بر اساس کد کارمندی
+            </summary>
+            <param name="id">کد مشتری</param>
+            <returns></returns>
+        </member>
+        <member name="M:SampleWebAPI.Controllers.CustomerController.Post(SampleWebAPI.Entites.Customer)">
+            <summary>
+            افزودن مشتری جدید
+            </summary>
+            <param name="model">اطلاعات مشتری</param>
+            <returns></returns>
+        </member>
+    </members>
+</doc>
