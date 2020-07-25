@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -12,6 +14,8 @@ namespace SampleWebAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
+    [EnableCors]
     public class CustomerController : ControllerBase
     {
         private AdventureWorkSampleDBContext _context;
@@ -57,6 +61,25 @@ namespace SampleWebAPI.Controllers
             if (!ModelState.IsValid)
                 return BadRequest("اطلاعات ارسالی صحیح نمی باشد");
             await _context.Customer.AddAsync(model);
+            await _context.SaveChangesAsync();
+
+            return Ok();
+        }
+
+        [HttpPut]
+        public async Task<IActionResult> Put([FromBody]Customer model)
+        {
+            _context.Attach(model).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+
+            return Ok();
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+           var item = await _context.Customer.FindAsync(id);
+            _context.Remove(item);
             await _context.SaveChangesAsync();
 
             return Ok();

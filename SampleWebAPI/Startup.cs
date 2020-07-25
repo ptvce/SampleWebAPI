@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -13,6 +15,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using SampleWebAPI.Data;
 
@@ -89,6 +92,54 @@ namespace SampleWebAPI
 
             #endregion
 
+            #region Configure JWT Authentication
+
+            var secretKey = Configuration.GetValue<string>("TokenKey");
+            var tokenTimeOut = Configuration.GetValue<int>("TokenTimeOut");
+
+            var key = Encoding.UTF8.GetBytes(secretKey);
+
+            //request headers
+            //"Authorization": "Bearer token"
+            //install package Microsoft.AspNetCore.Authentication.JwtBearer
+            services.AddAuthentication(x =>
+            {
+                x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(x =>
+            {
+                x.RequireHttpsMetadata = false;
+                x.SaveToken = true;
+                x.TokenValidationParameters = new TokenValidationParameters
+                {
+                    //managing time of token
+                    ClockSkew = TimeSpan.FromMinutes(tokenTimeOut),
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(key),
+                    ValidateIssuer = false,
+                    ValidateAudience = false
+                };
+            });
+
+            #endregion
+
+            #region Cors
+
+            services.AddCors(options =>
+            {
+                options.AddPolicy("VandaApp",
+                  builder =>
+                  {
+                      builder.WithOrigins("*");
+                      builder.WithHeaders("*");
+                      builder.WithMethods("*");
+                  });
+            });
+
+            #endregion
+
             services.AddControllers();
         }
 
@@ -107,19 +158,21 @@ namespace SampleWebAPI
             // Enable middleware to serve generated Swagger as a JSON endpoint.
             app.UseSwagger();
 
-            app.UseCors("FadApp");
+            app.UseCors("VandaApp");
 
             // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.),
             // specifying the Swagger JSON endpoint.
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "FAD API V1");
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "VANDA API V1");
             });
 
 
             #endregion
 
             app.UseRouting();
+
+            app.UseAuthentication();
 
             app.UseAuthorization();
 
